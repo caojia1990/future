@@ -1,4 +1,4 @@
-package com.caojia.future.trader.strategy;
+package com.caojia.future.trader.programTrading;
 
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcDepthMarketDataField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcReqUserLoginField;
@@ -75,7 +75,7 @@ public class MyMdSpi extends JCTPMdSpi {
 		int volumeChange = 0;
 		double openInterestChange = 0;
 		
-		application.cu1707(pDepthMarketData);
+		application.onRtnDepthMarketData(pDepthMarketData);
 		
 		/*if(pDepthMarketData.getInstrumentID().equals("cu1707")){
 		    if(volume == 0){

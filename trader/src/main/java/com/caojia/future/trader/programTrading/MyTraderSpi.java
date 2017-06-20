@@ -1,4 +1,4 @@
-package com.caojia.future.trader.strategy;
+package com.caojia.future.trader.programTrading;
 
 
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_CC_Immediately;
@@ -150,21 +150,21 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	@Override
 	public void onRspOrderInsert(CThostFtdcInputOrderField pInputOrder,
 			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
-		System.out.println(pRspInfo.getErrorMsg());
+		logger.error("报单失败："+JSON.toJSONString(pRspInfo));
 	}
 	
 	@Override
 	public void onRspOrderAction(
 			CThostFtdcInputOrderActionField pInputOrderAction,
 			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
-		System.out.println(pRspInfo.getErrorMsg());
+		logger.error(pRspInfo.getErrorMsg());
 	}
 	
 	//成交回报
 	@Override
 	public void onRtnTrade(CThostFtdcTradeField pTrade) {
 		//System.out.println("成交"+pTrade.getInstrumentID());
-		application.position(pTrade);
+		application.onRtnTrade(pTrade);
 		
 	}
 	
@@ -200,12 +200,12 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	@Override
 	public void onRspError(CThostFtdcRspInfoField pRspInfo, int nRequestID,
 			boolean bIsLast) {
-		System.out.println("错误回调");
+	    logger.error("错误回调");
 	}
 	@Override
 	public void onErrRtnOrderInsert(CThostFtdcInputOrderField pInputOrder,
 			CThostFtdcRspInfoField pRspInfo) {
-		System.out.println("报单录入错误回调");
+	    logger.error("报单录入错误回调："+JSON.toJSONString(pRspInfo));
 	}
 	
 	/**

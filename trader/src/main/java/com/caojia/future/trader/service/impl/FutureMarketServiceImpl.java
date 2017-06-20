@@ -18,7 +18,11 @@ public class FutureMarketServiceImpl implements FutureMarketService{
 
 	public void saveFutureMarket(CThostFtdcDepthMarketDataField dataField,int volumeChange,int openInterestChange) {
 		
-		int result = this.futureMarketDao.insert(dataField,volumeChange,openInterestChange);
+		try {
+            int result = this.futureMarketDao.insert(dataField,volumeChange,openInterestChange);
+        } catch (Exception e) {
+            logger.error("保存行情数据失败",e);
+        }
 		/*if(result > 0 ){
 			logger.debug("保存行情成功,合约代码： "+dataField.getInstrumentID());
 		}else {
