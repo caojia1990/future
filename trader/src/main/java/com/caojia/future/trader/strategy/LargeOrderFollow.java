@@ -1,12 +1,8 @@
 package com.caojia.future.trader.strategy;
 
-import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_CC_Immediately;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_D_Buy;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_D_Sell;
-import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_FCC_NotForceClose;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_OPT_LimitPrice;
-import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_TC_IOC;
-import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_VC_AV;
 
 import org.apache.log4j.Logger;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderField;
@@ -72,48 +68,30 @@ public class LargeOrderFollow implements Runnable {
                 if(position.getDirection().equals("0")){
                     //买开
                     if(position.getPrice() < market.getBidPrice1()){
+                        
+                        if(market.getBidVolume1() >= market.getAskVolume1()/2){
+                            //如果买一量的挂单大于卖一量的挂单，则继续持有多头合约
+                            logger.info("买单支撑比卖单支撑强，继续持有多头");
+                            continue;
+                        }
                         //止盈
                         logger.info("止盈卖出平仓操作 ，成本价："+position.getPrice()+" ,当前买一价：" +market.getBidPrice1());
                         //卖平
                         CThostFtdcInputOrderField inputOrderField=new CThostFtdcInputOrderField();
-                        //期货公司代码
-                        inputOrderField.setBrokerID("9999");
-                        //投资者代码
-                        inputOrderField.setInvestorID("090985");
                         // 合约代码
                         inputOrderField.setInstrumentID("cu1708");
                         ///报单引用
                         inputOrderField.setOrderRef(String.valueOf((orderRef++)));
-                        // 用户代码
-                        inputOrderField.setUserID("090985");
                         // 报单价格条件
                         inputOrderField.setOrderPriceType(THOST_FTDC_OPT_LimitPrice);
                             
                         inputOrderField.setDirection(THOST_FTDC_D_Sell);
                         // 组合开平标志
                         inputOrderField.setCombOffsetFlag("3");
-                        // 组合投机套保标志
-                        inputOrderField.setCombHedgeFlag("1");
                         // 价格
                         inputOrderField.setLimitPrice(market.getBidPrice1());
                         // 数量
                         inputOrderField.setVolumeTotalOriginal(1);
-                        // 有效期类型
-                        inputOrderField.setTimeCondition(THOST_FTDC_TC_IOC);
-                        // GTD日期
-                        inputOrderField.setGTDDate("");
-                        // 成交量类型
-                        inputOrderField.setVolumeCondition(THOST_FTDC_VC_AV);
-                        // 最小成交量
-                        inputOrderField.setMinVolume(0);
-                        // 触发条件
-                        inputOrderField.setContingentCondition(THOST_FTDC_CC_Immediately);
-                        // 止损价
-                        inputOrderField.setStopPrice(0);
-                        // 强平原因
-                        inputOrderField.setForceCloseReason(THOST_FTDC_FCC_NotForceClose);
-                        // 自动挂起标志
-                        inputOrderField.setIsAutoSuspend(0);
                         
                         application.reqOrderInsert(inputOrderField);
                     }else if(position.getPrice() > market.getBidPrice1() + 20){
@@ -121,91 +99,49 @@ public class LargeOrderFollow implements Runnable {
                         logger.info("止损卖出平仓操作 ，成本价："+position.getPrice()+" ,当前买一价：" +market.getBidPrice1());
                         //卖平
                         CThostFtdcInputOrderField inputOrderField=new CThostFtdcInputOrderField();
-                        //期货公司代码
-                        inputOrderField.setBrokerID("9999");
-                        //投资者代码
-                        inputOrderField.setInvestorID("090985");
                         // 合约代码
                         inputOrderField.setInstrumentID("cu1708");
                         ///报单引用
                         inputOrderField.setOrderRef(String.valueOf((orderRef++)));
-                        // 用户代码
-                        inputOrderField.setUserID("090985");
                         // 报单价格条件
                         inputOrderField.setOrderPriceType(THOST_FTDC_OPT_LimitPrice);
                             
                         inputOrderField.setDirection(THOST_FTDC_D_Sell);
                         // 组合开平标志
                         inputOrderField.setCombOffsetFlag("3");
-                        // 组合投机套保标志
-                        inputOrderField.setCombHedgeFlag("1");
                         // 价格
                         inputOrderField.setLimitPrice(market.getBidPrice1());
                         // 数量
                         inputOrderField.setVolumeTotalOriginal(1);
-                        // 有效期类型
-                        inputOrderField.setTimeCondition(THOST_FTDC_TC_IOC);
-                        // GTD日期
-                        inputOrderField.setGTDDate("");
-                        // 成交量类型
-                        inputOrderField.setVolumeCondition(THOST_FTDC_VC_AV);
-                        // 最小成交量
-                        inputOrderField.setMinVolume(0);
-                        // 触发条件
-                        inputOrderField.setContingentCondition(THOST_FTDC_CC_Immediately);
-                        // 止损价
-                        inputOrderField.setStopPrice(0);
-                        // 强平原因
-                        inputOrderField.setForceCloseReason(THOST_FTDC_FCC_NotForceClose);
-                        // 自动挂起标志
-                        inputOrderField.setIsAutoSuspend(0);
                         
                        application.reqOrderInsert(inputOrderField);
                     }
                 }else {
                   //卖开
+                    
                     if(position.getPrice() > market.getAskPrice1()){
+                        
+                        if(market.getAskVolume1() >= market.getBidVolume1()/2){
+                            logger.info("卖单支撑比买单支撑强，继续持有空头");
+                            continue;
+                        }
                         logger.info("止盈买入平仓操作 ，成本价："+position.getPrice()+" ,当前卖一价：" +market.getAskPrice1());
                       //买平
                         CThostFtdcInputOrderField inputOrderField=new CThostFtdcInputOrderField();
-                        //期货公司代码
-                        inputOrderField.setBrokerID("9999");
-                        //投资者代码
-                        inputOrderField.setInvestorID("090985");
                         // 合约代码
                         inputOrderField.setInstrumentID("cu1708");
                         ///报单引用
                         inputOrderField.setOrderRef(String.valueOf((orderRef++)));
-                        // 用户代码
-                        inputOrderField.setUserID("090985");
                         // 报单价格条件
                         inputOrderField.setOrderPriceType(THOST_FTDC_OPT_LimitPrice);
                             
                         inputOrderField.setDirection(THOST_FTDC_D_Buy);
                         // 组合开平标志
                         inputOrderField.setCombOffsetFlag("3");
-                        // 组合投机套保标志
-                        inputOrderField.setCombHedgeFlag("1");
                         // 价格
                         inputOrderField.setLimitPrice(market.getAskPrice1());
                         // 数量
                         inputOrderField.setVolumeTotalOriginal(1);
-                        // 有效期类型
-                        inputOrderField.setTimeCondition(THOST_FTDC_TC_IOC);
-                        // GTD日期
-                        inputOrderField.setGTDDate("");
-                        // 成交量类型
-                        inputOrderField.setVolumeCondition(THOST_FTDC_VC_AV);
-                        // 最小成交量
-                        inputOrderField.setMinVolume(0);
-                        // 触发条件
-                        inputOrderField.setContingentCondition(THOST_FTDC_CC_Immediately);
-                        // 止损价
-                        inputOrderField.setStopPrice(0);
-                        // 强平原因
-                        inputOrderField.setForceCloseReason(THOST_FTDC_FCC_NotForceClose);
-                        // 自动挂起标志
-                        inputOrderField.setIsAutoSuspend(0);
                         
                         application.reqOrderInsert(inputOrderField);
                     }else if (position.getPrice() < market.getAskPrice1()-20) {
@@ -213,44 +149,20 @@ public class LargeOrderFollow implements Runnable {
                         //止损
                       //买平
                         CThostFtdcInputOrderField inputOrderField=new CThostFtdcInputOrderField();
-                        //期货公司代码
-                        inputOrderField.setBrokerID("9999");
-                        //投资者代码
-                        inputOrderField.setInvestorID("090985");
                         // 合约代码
                         inputOrderField.setInstrumentID("cu1708");
                         ///报单引用
                         inputOrderField.setOrderRef(String.valueOf((orderRef++)));
-                        // 用户代码
-                        inputOrderField.setUserID("090985");
                         // 报单价格条件
                         inputOrderField.setOrderPriceType(THOST_FTDC_OPT_LimitPrice);
                             
                         inputOrderField.setDirection(THOST_FTDC_D_Buy);
                         // 组合开平标志
                         inputOrderField.setCombOffsetFlag("3");
-                        // 组合投机套保标志
-                        inputOrderField.setCombHedgeFlag("1");
                         // 价格
                         inputOrderField.setLimitPrice(market.getAskPrice1());
                         // 数量
                         inputOrderField.setVolumeTotalOriginal(1);
-                        // 有效期类型
-                        inputOrderField.setTimeCondition(THOST_FTDC_TC_IOC);
-                        // GTD日期
-                        inputOrderField.setGTDDate("");
-                        // 成交量类型
-                        inputOrderField.setVolumeCondition(THOST_FTDC_VC_AV);
-                        // 最小成交量
-                        inputOrderField.setMinVolume(0);
-                        // 触发条件
-                        inputOrderField.setContingentCondition(THOST_FTDC_CC_Immediately);
-                        // 止损价
-                        inputOrderField.setStopPrice(0);
-                        // 强平原因
-                        inputOrderField.setForceCloseReason(THOST_FTDC_FCC_NotForceClose);
-                        // 自动挂起标志
-                        inputOrderField.setIsAutoSuspend(0);
                         
                         application.reqOrderInsert(inputOrderField);
                     }
@@ -260,20 +172,15 @@ public class LargeOrderFollow implements Runnable {
               //下单
                 if(market.getVolumeChange() >0 ){
                     
-                    if(market.getVolumeChange()/volumeAvg > 3  && tickCount > 20 ){
+                    if(market.getVolumeChange()/volumeAvg > 3  && tickCount > 20 && market.getOpenInterestChange() >0 ){
                         logger.info("成交量大于平局成交量3倍,策略下单");
                         CThostFtdcInputOrderField inputOrderField=new CThostFtdcInputOrderField();
-                        //期货公司代码
-                        inputOrderField.setBrokerID("9999");
-                        //投资者代码
-                        inputOrderField.setInvestorID("090985");
+                        
                         // 合约代码
                         inputOrderField.setInstrumentID("cu1708");
                         ///报单引用
                         inputOrderField.setOrderRef(String.valueOf((orderRef++)));
                         
-                        // 用户代码
-                        inputOrderField.setUserID("090985");
                         // 报单价格条件
                         inputOrderField.setOrderPriceType(THOST_FTDC_OPT_LimitPrice);
                         // 买卖方向    
@@ -293,27 +200,9 @@ public class LargeOrderFollow implements Runnable {
                         }
                         // 组合开平标志
                         inputOrderField.setCombOffsetFlag("0");
-                        // 组合投机套保标志
-                        inputOrderField.setCombHedgeFlag("1");
                         
                         // 数量
                         inputOrderField.setVolumeTotalOriginal(1);
-                        // 有效期类型
-                        inputOrderField.setTimeCondition(THOST_FTDC_TC_IOC);
-                        // GTD日期
-                        inputOrderField.setGTDDate("");
-                        // 成交量类型
-                        inputOrderField.setVolumeCondition(THOST_FTDC_VC_AV);
-                        // 最小成交量
-                        inputOrderField.setMinVolume(0);
-                        // 触发条件
-                        inputOrderField.setContingentCondition(THOST_FTDC_CC_Immediately);
-                        // 止损价
-                        inputOrderField.setStopPrice(0);
-                        // 强平原因
-                        inputOrderField.setForceCloseReason(THOST_FTDC_FCC_NotForceClose);
-                        // 自动挂起标志
-                        inputOrderField.setIsAutoSuspend(0);
                         
                         application.reqOrderInsert(inputOrderField);
                         

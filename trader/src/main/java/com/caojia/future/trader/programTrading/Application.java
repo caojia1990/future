@@ -1,5 +1,10 @@
 package com.caojia.future.trader.programTrading;
 
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_CC_Immediately;
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_FCC_NotForceClose;
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_TC_IOC;
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_VC_AV;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -98,6 +103,30 @@ public class Application {
      * @return
      */
     public int reqOrderInsert(CThostFtdcInputOrderField inputOrderField){
+        //期货公司代码
+        inputOrderField.setBrokerID("9999");
+        //投资者代码
+        inputOrderField.setInvestorID("090985");
+        // 用户代码
+        inputOrderField.setUserID("090985");
+        // 组合投机套保标志
+        inputOrderField.setCombHedgeFlag("1");
+        // 有效期类型    不成交即撤单
+        inputOrderField.setTimeCondition(THOST_FTDC_TC_IOC);
+        // GTD日期
+        inputOrderField.setGTDDate("");
+        // 成交量类型
+        inputOrderField.setVolumeCondition(THOST_FTDC_VC_AV);
+        // 最小成交量
+        inputOrderField.setMinVolume(0);
+        // 触发条件
+        inputOrderField.setContingentCondition(THOST_FTDC_CC_Immediately);
+        // 止损价
+        inputOrderField.setStopPrice(0);
+        // 强平原因
+        inputOrderField.setForceCloseReason(THOST_FTDC_FCC_NotForceClose);
+        // 自动挂起标志
+        inputOrderField.setIsAutoSuspend(0);
         
         return traderApi.reqOrderInsert(inputOrderField, request.incrementAndGet());
     }
@@ -194,19 +223,19 @@ public class Application {
         
         
         final Application application = new Application();
-        marketQueue = new LinkedBlockingDeque<FuturesMarket>(); 
+        /*marketQueue = new LinkedBlockingDeque<FuturesMarket>(); 
         
         Thread market = new Thread(new MarketThread(application));
-        market.start();
+        market.start();*/
         
         Thread trade = new Thread(new TradeThread(application));
         trade.start();
         
         
-        Thread strategy = new Thread(new LargeOrderFollow(application));
+       /* Thread strategy = new Thread(new LargeOrderFollow(application));
         strategy.start();
         
-        market.join();
+        market.join();*/
         
         trade.join();
         
