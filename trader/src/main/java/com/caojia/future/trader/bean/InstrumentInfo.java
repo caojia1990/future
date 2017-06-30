@@ -12,9 +12,21 @@ public class InstrumentInfo {
 
     public final static String PRICE_TICK = "priceTick";
     
+    public final static String OPEN_RATIO_BY_MONEY = "OpenRatioByMoney";
+    
+    public final static String OPEN_RATIO_BY_VOLUME = "OpenRatioByVolume";
+    
+    public final static String CLOSE_RATIO_BY_MONEY = "CloseRatioByMoney";
+    
+    public final static String CLOSE_RATIO_BY_VOLUME = "CloseRatioByVolume";
+    
+    public final static String CLOSE_TODAY_RATIO_BY_MONEY = "CloseTodayRatioByMoney";
+    
+    public final static String CLOSE_TODAY_RATIO_BY_VOLUME = "CloseTodayRatioByVolume";
+    
     private String instrumentID;
     
-    /*private String exchangeID;
+    private String exchangeID;
     
     private String instrumentName;
     
@@ -28,16 +40,36 @@ public class InstrumentInfo {
     
     private int maxLimitOrderVolume;
     
-    private int MinLimitOrderVolume;*/
+    private int MinLimitOrderVolume;
     
     private int volumeMultiple;
     
     private double priceTick;
     
-    /*private double longMarginRatio;
+    private double longMarginRatio;
     
-    private double shortMarginRatio;*/
+    private double shortMarginRatio;
 
+    /**---------------------------------------------------------------------------**/
+    
+    //开仓手续费比例(按金额)
+    private double OpenRatioByMoney;
+    
+    //开仓手续费比例(按手数)
+    private double OpenRatioByVolume;
+    
+    //平仓手续费比例(按金额)
+    private double CloseRatioByMoney;
+    
+    //平仓手续费比例(按手数)
+    private double CloseRatioByVolume;
+    
+    //平今手续费比例(按金额)
+    private double CloseTodayRatioByMoney;
+    
+    //平今手续费比例(按手数)
+    private double CloseTodayRatioByVolume;
+    
     public String getInstrumentID() {
         return instrumentID;
     }
@@ -46,7 +78,7 @@ public class InstrumentInfo {
         this.instrumentID = instrumentID;
     }
 
-   /* public String getExchangeID() {
+    public String getExchangeID() {
         return exchangeID;
     }
 
@@ -108,7 +140,7 @@ public class InstrumentInfo {
 
     public void setMinLimitOrderVolume(int minLimitOrderVolume) {
         MinLimitOrderVolume = minLimitOrderVolume;
-    }*/
+    }
 
     public int getVolumeMultiple() {
         return volumeMultiple;
@@ -126,7 +158,55 @@ public class InstrumentInfo {
         this.priceTick = priceTick;
     }
 
-    /*public double getLongMarginRatio() {
+    public double getOpenRatioByMoney() {
+        return OpenRatioByMoney;
+    }
+
+    public void setOpenRatioByMoney(double openRatioByMoney) {
+        OpenRatioByMoney = openRatioByMoney;
+    }
+
+    public double getOpenRatioByVolume() {
+        return OpenRatioByVolume;
+    }
+
+    public void setOpenRatioByVolume(double openRatioByVolume) {
+        OpenRatioByVolume = openRatioByVolume;
+    }
+
+    public double getCloseRatioByMoney() {
+        return CloseRatioByMoney;
+    }
+
+    public void setCloseRatioByMoney(double closeRatioByMoney) {
+        CloseRatioByMoney = closeRatioByMoney;
+    }
+
+    public double getCloseRatioByVolume() {
+        return CloseRatioByVolume;
+    }
+
+    public void setCloseRatioByVolume(double closeRatioByVolume) {
+        CloseRatioByVolume = closeRatioByVolume;
+    }
+
+    public double getCloseTodayRatioByMoney() {
+        return CloseTodayRatioByMoney;
+    }
+
+    public void setCloseTodayRatioByMoney(double closeTodayRatioByMoney) {
+        CloseTodayRatioByMoney = closeTodayRatioByMoney;
+    }
+
+    public double getCloseTodayRatioByVolume() {
+        return CloseTodayRatioByVolume;
+    }
+
+    public void setCloseTodayRatioByVolume(double closeTodayRatioByVolume) {
+        CloseTodayRatioByVolume = closeTodayRatioByVolume;
+    }
+
+    public double getLongMarginRatio() {
         return longMarginRatio;
     }
 
@@ -140,7 +220,7 @@ public class InstrumentInfo {
 
     public void setShortMarginRatio(double shortMarginRatio) {
         this.shortMarginRatio = shortMarginRatio;
-    }*/
+    }
     
     
 }

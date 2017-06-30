@@ -63,7 +63,7 @@ public class MyMdSpi extends JCTPMdSpi {
 		String s1 = s.replaceAll("\r\n", "");
 		String[] ss = s1.split(",");*/
 		
-		subResult = mdApi.subscribeMarketData("cu1708");
+		subResult = mdApi.subscribeMarketData("cu1708","cu1709","al1708","rb1710");
 		System.out.println(subResult == 0 ? "订阅成功" : "订阅失败");
 	}
 

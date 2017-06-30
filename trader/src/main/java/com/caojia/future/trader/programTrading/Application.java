@@ -4,7 +4,11 @@ import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDa
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_FCC_NotForceClose;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_TC_IOC;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_VC_AV;
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_OST_Canceled;
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_OST_NoTradeNotQueueing;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +17,7 @@ import org.apache.log4j.Logger;
 import org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_TE_RESUME_TYPE;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcDepthMarketDataField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderField;
+import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcOrderField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcTradeField;
 import org.hraink.futures.jctp.md.JCTPMdApi;
 import org.hraink.futures.jctp.md.JCTPMdSpi;
@@ -21,6 +26,7 @@ import org.hraink.futures.jctp.trader.JCTPTraderSpi;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.alibaba.fastjson.JSON;
+import com.caojia.future.trader.bean.FutureChange;
 import com.caojia.future.trader.bean.FuturesMarket;
 import com.caojia.future.trader.bean.Position;
 import com.caojia.future.trader.service.FutureMarketService;
@@ -31,7 +37,10 @@ public class Application {
     
     static Logger logger = Logger.getLogger(Application.class);
     
-    public String instrument = "rb1710";
+    String investorNo = "090985";
+    
+    String brokerId = "9999";
+    
     
     //行情地址
     public static String marketFront = "tcp://180.168.146.187:10010";
@@ -46,8 +55,10 @@ public class Application {
     
     private static FutureMarketService marketService;
     
-    int volume = 0;
-    double openInterest = 0;
+/*    int volume = 0;
+    double openInterest = 0;*/
+    
+    Map<String , FutureChange> changeMap = new HashMap<String , FutureChange>();
     int orderRef = 0;
 
     AtomicInteger request = new AtomicInteger(0);
@@ -57,13 +68,24 @@ public class Application {
     private static BlockingQueue<FuturesMarket> marketQueue;
     
     //持仓信息
-    private Position position;
+    private Map<String, Position> positionMap= new HashMap<String, Position>();
     
     public void onRtnDepthMarketData(CThostFtdcDepthMarketDataField pDepthMarketData){
         
         int volumeChange = 0;
         double openInterestChange = 0;
-        if(volume == 0){
+        FutureChange futureChange = this.getChange(pDepthMarketData.getInstrumentID());
+        if(futureChange.getVolume() == 0){
+            futureChange.setVolume(pDepthMarketData.getVolume());
+            futureChange.setOpenInterest(pDepthMarketData.getOpenInterest());
+        }else {
+            volumeChange = pDepthMarketData.getVolume() - futureChange.getVolume();
+            openInterestChange = pDepthMarketData.getOpenInterest() - futureChange.getOpenInterest();
+            futureChange.setVolume(pDepthMarketData.getVolume());
+            futureChange.setOpenInterest(pDepthMarketData.getOpenInterest());
+        }
+        
+        /*if(volume == 0){
             volume = pDepthMarketData.getVolume();
             openInterest = pDepthMarketData.getOpenInterest();
         }else {
@@ -72,7 +94,7 @@ public class Application {
             volume = pDepthMarketData.getVolume();
             openInterest = pDepthMarketData.getOpenInterest();
             
-        }
+        }*/
         
         FuturesMarket market = new FuturesMarket();
         
@@ -103,12 +125,13 @@ public class Application {
      * @return
      */
     public int reqOrderInsert(CThostFtdcInputOrderField inputOrderField){
+        
         //期货公司代码
-        inputOrderField.setBrokerID("9999");
+        inputOrderField.setBrokerID(brokerId);
         //投资者代码
-        inputOrderField.setInvestorID("090985");
+        inputOrderField.setInvestorID(investorNo);
         // 用户代码
-        inputOrderField.setUserID("090985");
+        inputOrderField.setUserID(brokerId);
         // 组合投机套保标志
         inputOrderField.setCombHedgeFlag("1");
         // 有效期类型    不成交即撤单
@@ -128,7 +151,30 @@ public class Application {
         // 自动挂起标志
         inputOrderField.setIsAutoSuspend(0);
         
-        return traderApi.reqOrderInsert(inputOrderField, request.incrementAndGet());
+        int result = traderApi.reqOrderInsert(inputOrderField, request.incrementAndGet());
+        
+        //预先缓存持仓信息，避免重复开仓
+        Position position = new Position();
+        position.setInstrumentID(inputOrderField.getInstrumentID());
+        position.setDirection(String.valueOf(inputOrderField.getDirection()));
+        position.setOrderRef(inputOrderField.getOrderRef());
+        position.setPrice(inputOrderField.getLimitPrice());
+        position.setVolume(inputOrderField.getVolumeTotalOriginal());
+        positionMap.put(inputOrderField.getInstrumentID(), position);
+        
+        return result;
+    }
+    
+    /**
+     * 报单回报
+     * @param pOrder
+     */
+    public void onRtnOrder(CThostFtdcOrderField pOrder) {
+        
+        if(pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus()){
+            logger.debug("报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
+            positionMap.remove(pOrder.getInstrumentID());
+        }
     }
     
     
@@ -143,11 +189,11 @@ public class Application {
             position.setOrderRef(pTrade.getOrderRef());
             position.setPrice(pTrade.getPrice());
             position.setVolume(pTrade.getVolume());
-            this.position = position;
+            positionMap.put(pTrade.getInstrumentID(), position);
             
         }else {
             logger.info("已平仓，成交价："+pTrade.getPrice());
-            this.position = null;
+            positionMap.put(pTrade.getInstrumentID(), null);
             //queue.clear();
         }
     }
@@ -223,19 +269,19 @@ public class Application {
         
         
         final Application application = new Application();
-        /*marketQueue = new LinkedBlockingDeque<FuturesMarket>(); 
+        marketQueue = new LinkedBlockingDeque<FuturesMarket>(); 
         
         Thread market = new Thread(new MarketThread(application));
-        market.start();*/
+        market.start();
         
         Thread trade = new Thread(new TradeThread(application));
         trade.start();
         
         
-       /* Thread strategy = new Thread(new LargeOrderFollow(application));
+        Thread strategy = new Thread(new LargeOrderFollow(application));
         strategy.start();
         
-        market.join();*/
+        market.join();
         
         trade.join();
         
@@ -247,21 +293,19 @@ public class Application {
         return marketQueue;
     }
 
-
-    public void setMarketQueue(BlockingQueue<FuturesMarket> marketQueue) {
-        Application.marketQueue = marketQueue;
+    public Map<String, Position> getPositionMap() {
+        return positionMap;
     }
 
-
-    public Position getPosition() {
-        return position;
+    public FutureChange getChange(String instrument){
+        
+        FutureChange change = this.changeMap.get(instrument);
+        if(change == null){
+            change = new FutureChange();
+            changeMap.put(instrument, change);
+        }
+        return change;
     }
-
-
-    public void setPosition(Position position) {
-        this.position = position;
-    }
-    
     
 
 }

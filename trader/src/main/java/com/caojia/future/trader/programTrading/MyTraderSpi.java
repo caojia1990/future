@@ -4,11 +4,13 @@ package com.caojia.future.trader.programTrading;
 import org.apache.log4j.Logger;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderActionField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderField;
+import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInstrumentCommissionRateField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInstrumentField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInstrumentMarginRateField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInvestorPositionDetailField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInvestorPositionField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcOrderField;
+import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcQryInstrumentCommissionRateField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcQryInstrumentField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcQryInvestorPositionDetailField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcReqUserLoginField;
@@ -95,15 +97,15 @@ public class MyTraderSpi extends JCTPTraderSpi {
 		
 		//查询合约信息
 		CThostFtdcQryInstrumentField pQryInstrument = new CThostFtdcQryInstrumentField();
-		traderApi.reqQryInstrument(pQryInstrument, ++nRequestID);
+		//traderApi.reqQryInstrument(pQryInstrument, ++nRequestID);
 
-		
 	}
 	
 	//报单回报
 	@Override
 	public void onRtnOrder(CThostFtdcOrderField pOrder) {
 		System.out.println(pOrder.getStatusMsg());
+		
 	}
 	
 	//报单响应
@@ -195,8 +197,45 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	    info.setInstrumentID(pInstrument.getInstrumentID());
 	    info.setVolumeMultiple(pInstrument.getVolumeMultiple());
 	    info.setPriceTick(pInstrument.getPriceTick());
+	    info.setExchangeID(pInstrument.getExchangeID());
+	    info.setExchangeInstID(pInstrument.getExchangeInstID());
+	    info.setProductID(pInstrument.getProductID());
+	    info.setMaxMarketOrderVolume(pInstrument.getMaxMarketOrderVolume());
+	    info.setMaxLimitOrderVolume(pInstrument.getMaxLimitOrderVolume());
+	    info.setMinMarketOrderVolume(pInstrument.getMinMarketOrderVolume());
+	    info.setMinLimitOrderVolume(pInstrument.getMinLimitOrderVolume());
+	    info.setLongMarginRatio(pInstrument.getLongMarginRatio());
+	    info.setShortMarginRatio(pInstrument.getShortMarginRatio());
 	    instrumentInfoRedisDao.saveInstrument(info);
+	    
+	  /*//查询合约手续费
+        CThostFtdcQryInstrumentCommissionRateField pQryInstrumentCommissionRate = new CThostFtdcQryInstrumentCommissionRateField();
+        pQryInstrumentCommissionRate.setBrokerID(brokerId);
+        pQryInstrumentCommissionRate.setInvestorID(userId);
+        pQryInstrumentCommissionRate.setInstrumentID(pInstrument.getProductID());
+        traderApi.reqQryInstrumentCommissionRate(pQryInstrumentCommissionRate, ++nRequestID);*/
 	}
+	
+	   /**
+     * 请求查询合约手续费率响应
+     * @param pInstrumentCommissionRate
+     * @param pRspInfo
+     * @param nRequestID
+     * @param bIsLast
+     */
+    public void onRspQryInstrumentCommissionRate(CThostFtdcInstrumentCommissionRateField pInstrumentCommissionRate, 
+            CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+        
+        InstrumentInfo info = new InstrumentInfo();
+        info.setInstrumentID(pInstrumentCommissionRate.getInstrumentID());
+        info.setOpenRatioByMoney(pInstrumentCommissionRate.getOpenRatioByMoney());
+        info.setOpenRatioByVolume(pInstrumentCommissionRate.getOpenRatioByVolume());
+        info.setCloseRatioByMoney(pInstrumentCommissionRate.getCloseRatioByMoney());
+        info.setCloseRatioByVolume(pInstrumentCommissionRate.getCloseRatioByVolume());
+        info.setCloseTodayRatioByMoney(pInstrumentCommissionRate.getCloseTodayRatioByMoney());
+        info.setCloseTodayRatioByVolume(pInstrumentCommissionRate.getCloseTodayRatioByVolume());
+        //instrumentInfoRedisDao.saveInstrumentCommision(info);
+    }
 	
 
 }
