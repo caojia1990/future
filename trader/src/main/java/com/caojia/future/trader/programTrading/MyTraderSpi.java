@@ -105,6 +105,7 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	@Override
 	public void onRtnOrder(CThostFtdcOrderField pOrder) {
 		System.out.println(pOrder.getStatusMsg());
+		application.onRtnOrder(pOrder);
 		
 	}
 	
@@ -113,8 +114,10 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	public void onRspOrderInsert(CThostFtdcInputOrderField pInputOrder,
 			CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
 		logger.error("报单失败："+JSON.toJSONString(pRspInfo));
+		application.onRspOrderInsert(pInputOrder, pRspInfo, nRequestID, bIsLast);
 	}
 	
+	//撤单
 	@Override
 	public void onRspOrderAction(
 			CThostFtdcInputOrderActionField pInputOrderAction,

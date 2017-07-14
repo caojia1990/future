@@ -18,6 +18,7 @@ import org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeL
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcDepthMarketDataField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcOrderField;
+import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcRspInfoField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcTradeField;
 import org.hraink.futures.jctp.md.JCTPMdApi;
 import org.hraink.futures.jctp.md.JCTPMdSpi;
@@ -31,6 +32,7 @@ import com.caojia.future.trader.bean.FuturesMarket;
 import com.caojia.future.trader.bean.Position;
 import com.caojia.future.trader.service.FutureMarketService;
 import com.caojia.future.trader.strategy.LargeOrderFollow;
+import com.caojia.future.trader.strategy.OneTick;
 import com.caojia.future.trader.util.SpringContextUtil;
 
 public class Application {
@@ -171,9 +173,16 @@ public class Application {
      */
     public void onRtnOrder(CThostFtdcOrderField pOrder) {
         
-        if(pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus()){
+        if(pOrder.getCombOffsetFlag().equals("0") && (pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus())){
             logger.debug("报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
             positionMap.remove(pOrder.getInstrumentID());
+        }
+    }
+    
+    public void onRspOrderInsert(CThostFtdcInputOrderField pInputOrder,
+            CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+        if(pInputOrder.getCombOffsetFlag().equals("0")){
+            positionMap.remove(pInputOrder.getInstrumentID());
         }
     }
     
@@ -278,7 +287,7 @@ public class Application {
         trade.start();
         
         
-        Thread strategy = new Thread(new LargeOrderFollow(application));
+        Thread strategy = new Thread(new OneTick(application));
         strategy.start();
         
         market.join();
