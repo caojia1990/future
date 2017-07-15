@@ -214,7 +214,7 @@ public class LargeOrderFollow implements Runnable {
                             
                             if(market.getLastPrice().doubleValue() == lastMarketMap.get(market.getInstrumentID()).getBidPrice1().doubleValue()){
                                 //如果最新价等于上一跳的买一价
-                                if( (lastMarketMap.get(market.getInstrumentID()).getBidVolume1() - market.getBidVolume1()) <= (lastMarketMap.get(market.getInstrumentID()).getAskVolume1() - market.getBidVolume1()) ){
+                                if( (lastMarketMap.get(market.getInstrumentID()).getBidVolume1() - market.getBidVolume1()) <= (lastMarketMap.get(market.getInstrumentID()).getAskVolume1() - market.getAskVolume1()) ){
                                     //如果买一量支撑消减比卖一量慢  则不跟空单  继续观望
                                     logger.debug("多头优势，不跟空单");
                                     lastMarketMap.put(market.getInstrumentID(), market);
@@ -235,7 +235,7 @@ public class LargeOrderFollow implements Runnable {
                             
                             if(market.getLastPrice().doubleValue() == lastMarketMap.get(market.getInstrumentID()).getAskPrice1().doubleValue()){
                               //如果最新价等于上一跳的卖一价
-                                if( (lastMarketMap.get(market.getInstrumentID()).getBidVolume1() - market.getBidPrice1()) >= (lastMarketMap.get(market.getInstrumentID()).getAskPrice1() - market.getBidVolume1()) ){
+                                if( (lastMarketMap.get(market.getInstrumentID()).getBidVolume1() - market.getBidVolume1()) >= (lastMarketMap.get(market.getInstrumentID()).getAskVolume1() - market.getAskVolume1()) ){
                                     //如果买一量支撑消减比卖一量快  说明做空优势大  继续观望
                                     logger.debug("空头优势，不跟多单");
                                     lastMarketMap.put(market.getInstrumentID(), market);
