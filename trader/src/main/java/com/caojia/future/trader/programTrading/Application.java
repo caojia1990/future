@@ -87,17 +87,6 @@ public class Application {
             futureChange.setOpenInterest(pDepthMarketData.getOpenInterest());
         }
         
-        /*if(volume == 0){
-            volume = pDepthMarketData.getVolume();
-            openInterest = pDepthMarketData.getOpenInterest();
-        }else {
-            volumeChange = pDepthMarketData.getVolume() - volume;
-            openInterestChange = pDepthMarketData.getOpenInterest() - openInterest;
-            volume = pDepthMarketData.getVolume();
-            openInterest = pDepthMarketData.getOpenInterest();
-            
-        }*/
-        
         FuturesMarket market = new FuturesMarket();
         
         market.setAskPrice1(pDepthMarketData.getAskPrice1());

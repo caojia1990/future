@@ -30,6 +30,18 @@ public class Position {
      * 报单引用
      */
     private String orderRef;
+    
+    private String orderSystemId;
+    
+    
+
+    public String getOrderSystemId() {
+        return orderSystemId;
+    }
+
+    public void setOrderSystemId(String orderSystemId) {
+        this.orderSystemId = orderSystemId;
+    }
 
     public String getInstrumentID() {
         return instrumentID;
