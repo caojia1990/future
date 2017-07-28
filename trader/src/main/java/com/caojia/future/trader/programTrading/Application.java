@@ -30,6 +30,7 @@ import com.alibaba.fastjson.JSON;
 import com.caojia.future.trader.bean.FutureChange;
 import com.caojia.future.trader.bean.FuturesMarket;
 import com.caojia.future.trader.bean.Position;
+import com.caojia.future.trader.dao.CommonRedisDao;
 import com.caojia.future.trader.service.FutureMarketService;
 import com.caojia.future.trader.strategy.LargeOrderFollow;
 import com.caojia.future.trader.strategy.OneTick;
@@ -56,6 +57,7 @@ public class Application {
     static JCTPTraderSpi traderSpi;
     
     private static FutureMarketService marketService;
+    private static CommonRedisDao commonRedisDao;
     
 /*    int volume = 0;
     double openInterest = 0;*/
@@ -99,6 +101,7 @@ public class Application {
         market.setVolume(pDepthMarketData.getVolume());
         market.setVolumeChange(volumeChange);
         market.setOpenInterestChange(openInterestChange);
+        market.setTradeDate(pDepthMarketData.getTradingDay());
         market.setUpdateTime(pDepthMarketData.getUpdateTime());
         market.setUpdateMillisec(pDepthMarketData.getUpdateMillisec());
         try {
@@ -145,13 +148,16 @@ public class Application {
         int result = traderApi.reqOrderInsert(inputOrderField, request.incrementAndGet());
         
         //预先缓存持仓信息，避免重复开仓
-        Position position = new Position();
-        position.setInstrumentID(inputOrderField.getInstrumentID());
-        position.setDirection(String.valueOf(inputOrderField.getDirection()));
-        position.setOrderRef(inputOrderField.getOrderRef());
-        position.setPrice(inputOrderField.getLimitPrice());
-        position.setVolume(inputOrderField.getVolumeTotalOriginal());
-        positionMap.put(inputOrderField.getInstrumentID(), position);
+        if(inputOrderField.getCombOffsetFlag().equals("0")){
+            
+            Position position = new Position();
+            position.setInstrumentID(inputOrderField.getInstrumentID());
+            position.setDirection(String.valueOf(inputOrderField.getDirection()));
+            position.setPrice(inputOrderField.getLimitPrice());
+            position.setVolume(inputOrderField.getVolumeTotalOriginal());
+            positionMap.put(inputOrderField.getInstrumentID(), position);
+            
+        }
         
         return result;
     }
@@ -184,15 +190,20 @@ public class Application {
             Position position = new Position();
             position.setInstrumentID(pTrade.getInstrumentID());
             position.setDirection(String.valueOf(pTrade.getDirection()));
-            position.setOrderRef(pTrade.getOrderRef());
+            position.setTradeID(pTrade.getTradeID());
             position.setPrice(pTrade.getPrice());
             position.setVolume(pTrade.getVolume());
+            position.setTradeDate(pTrade.getTradeDate());
+            
             positionMap.put(pTrade.getInstrumentID(), position);
             
+            //第二天可能成交编号重复
+            commonRedisDao.cacheHash(Position.POSITION+position.getInstrumentID(), position.getTradeID(), JSON.toJSONString(position));
         }else {
             logger.info("已平仓，成交价："+pTrade.getPrice());
             positionMap.put(pTrade.getInstrumentID(), null);
-            //queue.clear();
+            
+            
         }
     }
     
@@ -264,7 +275,7 @@ public class Application {
         classPathXmlApplicationContext.start();
       //行情service
         marketService = (FutureMarketService) SpringContextUtil.getBean("futureMarketService");
-        
+        commonRedisDao = (CommonRedisDao) SpringContextUtil.getBean("commonRedisDao");
         
         final Application application = new Application();
         marketQueue = new LinkedBlockingDeque<FuturesMarket>(); 

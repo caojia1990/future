@@ -6,6 +6,8 @@ package com.caojia.future.trader.bean;
  */
 public class Position {
     
+    public static final String POSITION = "position:";
+    
     /**
      * 合约
      */
@@ -26,21 +28,45 @@ public class Position {
      */
     private Integer volume;
     
+    
     /**
-     * 报单引用
+     * 成交编号
      */
-    private String orderRef;
+    private String tradeID;
     
-    private String orderSystemId;
+    /**
+     * 成交日期
+     */
+    private String tradeDate;
     
+    /**
+     * 状态 0：持仓   1：平仓中
+     */
+    private String status = "0";
     
 
-    public String getOrderSystemId() {
-        return orderSystemId;
+    public String getStatus() {
+        return status;
     }
 
-    public void setOrderSystemId(String orderSystemId) {
-        this.orderSystemId = orderSystemId;
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getTradeDate() {
+        return tradeDate;
+    }
+
+    public void setTradeDate(String tradeDate) {
+        this.tradeDate = tradeDate;
+    }
+
+    public String getTradeID() {
+        return tradeID;
+    }
+
+    public void setTradeID(String tradeID) {
+        this.tradeID = tradeID;
     }
 
     public String getInstrumentID() {
@@ -75,13 +101,5 @@ public class Position {
         this.volume = volume;
     }
 
-    public String getOrderRef() {
-        return orderRef;
-    }
-
-    public void setOrderRef(String orderRef) {
-        this.orderRef = orderRef;
-    }
-    
     
 }

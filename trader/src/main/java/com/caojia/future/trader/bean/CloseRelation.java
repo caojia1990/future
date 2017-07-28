@@ -1,6 +1,12 @@
 package com.caojia.future.trader.bean;
 
+/**
+ * 平仓对应关系
+ * @author caojia
+ */
 public class CloseRelation {
+    
+    public static final String CLOSE_RELATION = "closeRelation:";
 
     /**
      * 平仓单orderRef
@@ -8,9 +14,9 @@ public class CloseRelation {
     private String closeOrderRef;
     
     /**
-     * 开仓单orderRef
+     * 开仓成交编号
      */
-    private String openOrderRef;
+    private String openTradeID;
 
     /**
      * 平仓单orderRef
@@ -27,18 +33,18 @@ public class CloseRelation {
     }
 
     /**
-     * 开仓单orderRef
+     * 开仓单成交编号
      */
-    public String getOpenOrderRef() {
-        return openOrderRef;
+    public String getOpenTradeID() {
+        return openTradeID;
     }
 
     /**
-     * 开仓单orderRef
+     * 开仓单成交编号
      */
-    public void setOpenOrderRef(String openOrderRef) {
-        this.openOrderRef = openOrderRef;
+    public void setOpenTradeID(String openTradeID) {
+        this.openTradeID = openTradeID;
     }
-    
+
     
 }

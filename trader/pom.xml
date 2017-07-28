@@ -57,7 +57,7 @@
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-jdbc</artifactId>
-        <version>3.2.15.RELEASE</version>
+        <version>4.2.4.RELEASE</version>
      </dependency>
      
     <dependency>
@@ -83,13 +83,6 @@
         <groupId>commons-beanutils</groupId>
           <artifactId>commons-beanutils</artifactId>
           <version>1.8.3</version>
-    </dependency>
-    
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>3.8.1</version>
-      <scope>test</scope>
     </dependency>
     
     
@@ -130,12 +123,17 @@
         <version>1.7.25</version>
     </dependency>
     
+    <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>22.0</version>
+    </dependency>
+    
     <!-- 单元测试 -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.10</version>
-      <scope>test</scope>
     </dependency>
     
   </dependencies>

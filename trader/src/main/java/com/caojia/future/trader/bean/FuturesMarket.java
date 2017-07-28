@@ -56,9 +56,24 @@ public class FuturesMarket {
      */
     private Integer askVolume1;
     
+    /**
+     * 交易日
+     */
+    private String tradeDate;
+    
     private String updateTime;
     
     private int updateMillisec;
+    
+    
+
+    public String getTradeDate() {
+        return tradeDate;
+    }
+
+    public void setTradeDate(String tradeDate) {
+        this.tradeDate = tradeDate;
+    }
 
     public String getInstrumentID() {
         return instrumentID;
