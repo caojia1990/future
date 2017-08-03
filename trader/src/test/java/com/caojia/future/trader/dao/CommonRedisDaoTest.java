@@ -31,7 +31,7 @@ public class CommonRedisDaoTest extends AbstractJUnit4SpringContextTests{
             position.setVolume(1);
             position.setTradeDate("20170728");
             
-            this.commonRedisDao.cacheHash(position.getInstrumentID(),
+            this.commonRedisDao.cacheHash(Position.POSITION+position.getInstrumentID(),
                     position.getTradeID(), JSON.toJSONString(position));
         }
         
@@ -39,7 +39,7 @@ public class CommonRedisDaoTest extends AbstractJUnit4SpringContextTests{
     
     @Test
     public void deleteHash(){
-        this.commonRedisDao.deleteHash("cu1709", "1231230");
+        this.commonRedisDao.deleteHash(Position.POSITION+"cu1709", "1231230");
     }
     
     
@@ -55,7 +55,13 @@ public class CommonRedisDaoTest extends AbstractJUnit4SpringContextTests{
     
     @Test
     public void deleteByKey(){
-        this.commonRedisDao.deleteByKey("cu1709");
+        this.commonRedisDao.deleteByKey(Position.POSITION+"cu1709");
     }
 
+    @Test
+    public void getKeysTest(){
+        System.out.println(this.commonRedisDao.getKeys(Position.POSITION+"cu1709"));
+        
+        
+    }
 }

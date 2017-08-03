@@ -27,11 +27,13 @@ import org.hraink.futures.jctp.trader.JCTPTraderSpi;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import com.alibaba.fastjson.JSON;
+import com.caojia.future.trader.bean.CloseRelation;
 import com.caojia.future.trader.bean.FutureChange;
 import com.caojia.future.trader.bean.FuturesMarket;
 import com.caojia.future.trader.bean.Position;
 import com.caojia.future.trader.dao.CommonRedisDao;
 import com.caojia.future.trader.service.FutureMarketService;
+import com.caojia.future.trader.strategy.FollowLargeNoCut;
 import com.caojia.future.trader.strategy.LargeOrderFollow;
 import com.caojia.future.trader.strategy.OneTick;
 import com.caojia.future.trader.util.SpringContextUtil;
@@ -169,15 +171,35 @@ public class Application {
     public void onRtnOrder(CThostFtdcOrderField pOrder) {
         
         if(pOrder.getCombOffsetFlag().equals("0") && (pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus())){
-            logger.debug("报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
+            logger.debug("开仓失败，报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
             positionMap.remove(pOrder.getInstrumentID());
+        }else if (!pOrder.getCombOffsetFlag().equals("0") && (pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus())) {
+            logger.debug("平仓失败，报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
+            
+            String tradeID = commonRedisDao.getHash(CloseRelation.CLOSE_RELATION+pOrder.getInstrumentID(), pOrder.getOrderRef());
+            String jsonStr = commonRedisDao.getHash(Position.POSITION+pOrder.getInstrumentID(), tradeID);
+            Position position = JSON.parseObject(jsonStr, Position.class);
+            position.setStatus("0");
+            commonRedisDao.cacheHash(Position.POSITION+pOrder.getInstrumentID(), tradeID, JSON.toJSONString(position));
+            //删除平仓对应关系
+            commonRedisDao.deleteHash(CloseRelation.CLOSE_RELATION+pOrder.getInstrumentID(), pOrder.getOrderRef());
         }
     }
     
     public void onRspOrderInsert(CThostFtdcInputOrderField pInputOrder,
             CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
         if(pInputOrder.getCombOffsetFlag().equals("0")){
+            //开仓失败
             positionMap.remove(pInputOrder.getInstrumentID());
+        }else {
+            //平仓失败
+            String tradeID = commonRedisDao.getHash(CloseRelation.CLOSE_RELATION+pInputOrder.getInstrumentID(), pInputOrder.getOrderRef());
+            String jsonStr = commonRedisDao.getHash(Position.POSITION+pInputOrder.getInstrumentID(), tradeID);
+            Position position = JSON.parseObject(jsonStr, Position.class);
+            position.setStatus("0");
+            commonRedisDao.cacheHash(Position.POSITION+pInputOrder.getInstrumentID(), tradeID, JSON.toJSONString(position));
+            
+            commonRedisDao.deleteHash(CloseRelation.CLOSE_RELATION+pInputOrder.getInstrumentID(), pInputOrder.getOrderRef());
         }
     }
     
@@ -193,17 +215,26 @@ public class Application {
             position.setTradeID(pTrade.getTradeID());
             position.setPrice(pTrade.getPrice());
             position.setVolume(pTrade.getVolume());
-            position.setTradeDate(pTrade.getTradeDate());
+            position.setTradeDate(pTrade.getTradingDay());
             
             positionMap.put(pTrade.getInstrumentID(), position);
             
             //第二天可能成交编号重复
+            logger.debug("缓存持仓信息："+JSON.toJSONString(position));
             commonRedisDao.cacheHash(Position.POSITION+position.getInstrumentID(), position.getTradeID(), JSON.toJSONString(position));
         }else {
             logger.info("已平仓，成交价："+pTrade.getPrice());
             positionMap.put(pTrade.getInstrumentID(), null);
-            
-            
+            //获取对应的开仓成交编号
+            String tradeID = commonRedisDao.getHash(CloseRelation.CLOSE_RELATION+pTrade.getInstrumentID(), pTrade.getOrderRef());
+            logger.debug("获取平仓编号："+pTrade.getTradeID()+"对应的开仓成交编号："+tradeID);
+            //删除持仓
+            if(tradeID != null){
+                commonRedisDao.deleteHash(Position.POSITION+pTrade.getInstrumentID(), tradeID);
+                logger.debug("删除持仓："+tradeID);
+                //删除平仓对应关系
+                commonRedisDao.deleteHash(CloseRelation.CLOSE_RELATION+pTrade.getInstrumentID(), pTrade.getOrderRef());
+            }
         }
     }
     
@@ -287,7 +318,7 @@ public class Application {
         trade.start();
         
         
-        Thread strategy = new Thread(new OneTick(application));
+        Thread strategy = new Thread(new FollowLargeNoCut(application));
         strategy.start();
         
         market.join();

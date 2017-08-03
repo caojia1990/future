@@ -3,6 +3,7 @@ package com.caojia.future.trader.dao;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.Resource;
 
@@ -46,23 +47,34 @@ public class CommonRedisDao {
     }
     
     /**
+     * 获取hash
+     * @param key
+     * @param hashKey
+     * @return
+     */
+    public String getHash(String key, String hashKey){
+        
+        return this.hashOperations.get(key, hashKey);
+    }
+    
+    /**
      * 获取指定key的hash所有属性
      * @param key
      * @return
      */
     public List<String> getHashList(String key){
-        Long size = hashOperations.size(key);
         
-        ScanOptions options = ScanOptions.scanOptions().count(size).build();
-        Cursor<Entry<String, String>> cursor = this.hashOperations.scan(key, options);
+        logger.info("从redis中获取key值为:"+key+"的持仓信息");
         
-        List<String> list = new ArrayList<String>();
+        List<String> list = this.hashOperations.multiGet(key, hashOperations.keys(key));
         
-        while(cursor.hasNext()){
-            Entry<String, String> entry = cursor.next();
-            list.add(entry.getValue());
-        }
+        logger.debug("成功获取持仓信息"+list);
         return list;
+    }
+    
+    public Set<String> getKeys(String key){
+        
+        return  this.hashOperations.keys(key);
     }
     
     /**
