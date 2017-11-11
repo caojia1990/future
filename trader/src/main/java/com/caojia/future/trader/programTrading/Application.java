@@ -42,9 +42,9 @@ public class Application {
     
     static Logger logger = Logger.getLogger(Application.class);
     
-    String investorNo = "090985";
-    
-    String brokerId = "9999";
+    public static String BROKER_ID = "9999";
+    public static String USER_ID = "105839";
+    public static String PASSWORD = "caojiactp1";
     
     
     //行情地址
@@ -123,11 +123,11 @@ public class Application {
     public int reqOrderInsert(CThostFtdcInputOrderField inputOrderField){
         
         //期货公司代码
-        inputOrderField.setBrokerID(brokerId);
+        inputOrderField.setBrokerID(BROKER_ID);
         //投资者代码
-        inputOrderField.setInvestorID(investorNo);
+        inputOrderField.setInvestorID(USER_ID);
         // 用户代码
-        inputOrderField.setUserID(brokerId);
+        inputOrderField.setUserID(USER_ID);
         // 组合投机套保标志
         inputOrderField.setCombHedgeFlag("1");
         // 有效期类型    不成交即撤单

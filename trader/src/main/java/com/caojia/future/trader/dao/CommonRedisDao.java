@@ -64,11 +64,11 @@ public class CommonRedisDao {
      */
     public List<String> getHashList(String key){
         
-        logger.info("从redis中获取key值为:"+key+"的持仓信息");
+        //logger.info("从redis中获取key值为:"+key+"的持仓信息");
         
         List<String> list = this.hashOperations.multiGet(key, hashOperations.keys(key));
         
-        logger.debug("成功获取持仓信息"+list);
+        //logger.debug("成功获取持仓信息"+list);
         return list;
     }
     
