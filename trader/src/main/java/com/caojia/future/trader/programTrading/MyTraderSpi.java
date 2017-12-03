@@ -1,6 +1,8 @@
 package com.caojia.future.trader.programTrading;
 
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderActionField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderField;
@@ -23,6 +25,8 @@ import org.hraink.futures.jctp.trader.JCTPTraderSpi;
 
 import com.alibaba.fastjson.JSON;
 import com.caojia.future.trader.bean.InstrumentInfo;
+import com.caojia.future.trader.bean.Position;
+import com.caojia.future.trader.dao.CommonRedisDao;
 import com.caojia.future.trader.dao.InstrumentInfoRedisDaoImpl;
 import com.caojia.future.trader.util.SpringContextUtil;
 
@@ -98,7 +102,12 @@ public class MyTraderSpi extends JCTPTraderSpi {
 		//查询合约信息
 		CThostFtdcQryInstrumentField pQryInstrument = new CThostFtdcQryInstrumentField();
 		//traderApi.reqQryInstrument(pQryInstrument, ++nRequestID);
-
+		
+		
+		//从redis中查询持仓信息
+		CommonRedisDao commonRedisDao = (CommonRedisDao) SpringContextUtil.getBean("commonRedisDao");
+		commonRedisDao.setValueByKey(Application.BUY+"cu1801", "0");
+		commonRedisDao.setValueByKey(Application.SELL+"cu1801", "0");
 	}
 	
 	//报单回报

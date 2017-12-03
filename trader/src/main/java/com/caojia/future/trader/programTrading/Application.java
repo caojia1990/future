@@ -34,6 +34,7 @@ import com.caojia.future.trader.bean.Position;
 import com.caojia.future.trader.dao.CommonRedisDao;
 import com.caojia.future.trader.service.FutureMarketService;
 import com.caojia.future.trader.strategy.FollowLargeNoCut;
+import com.caojia.future.trader.strategy.FollowLargeNoCutProtect;
 import com.caojia.future.trader.strategy.LargeOrderFollow;
 import com.caojia.future.trader.strategy.OneTick;
 import com.caojia.future.trader.util.SpringContextUtil;
@@ -46,6 +47,9 @@ public class Application {
     public static String USER_ID = "105839";
     public static String PASSWORD = "caojiactp1";
     
+    public static String BUY = "buy:";
+    public static String SELL = "sell:";
+    
     
     //行情地址
     public static String marketFront = "tcp://180.168.146.187:10010";
@@ -54,7 +58,8 @@ public class Application {
     static JCTPMdSpi mdSpi;
     
     //交易地址 
-    public static String tradeFront = "tcp://180.168.146.187:10000";
+    //public static String tradeFront = "tcp://180.168.146.187:10000";
+    public static String tradeFront = "tcp://180.168.146.187:10001";
     static JCTPTraderApi traderApi;
     static JCTPTraderSpi traderSpi;
     
@@ -173,6 +178,14 @@ public class Application {
         if(pOrder.getCombOffsetFlag().equals("0") && (pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus())){
             logger.debug("开仓失败，报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
             positionMap.remove(pOrder.getInstrumentID());
+            
+          //开仓失败后持仓数量减去
+            if(pOrder.getDirection() == '0'){
+                //买持量减去
+                commonRedisDao.increamentByKey(BUY+pOrder.getInstrumentID(), (long) -pOrder.getVolumeTotalOriginal());
+            }else {
+                commonRedisDao.increamentByKey(SELL+pOrder.getInstrumentID(), (long) -pOrder.getVolumeTotalOriginal());
+            }
         }else if (!pOrder.getCombOffsetFlag().equals("0") && (pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus())) {
             logger.debug("平仓失败，报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
             
@@ -183,6 +196,15 @@ public class Application {
             commonRedisDao.cacheHash(Position.POSITION+pOrder.getInstrumentID(), tradeID, JSON.toJSONString(position));
             //删除平仓对应关系
             commonRedisDao.deleteHash(CloseRelation.CLOSE_RELATION+pOrder.getInstrumentID(), pOrder.getOrderRef());
+            
+           //开仓失败后持仓数量加上
+            if(pOrder.getDirection() == '0'){
+                //卖持量加上
+                commonRedisDao.increamentByKey(SELL+pOrder.getInstrumentID(), (long) pOrder.getVolumeTotalOriginal());
+            }else {
+                //买持量加上
+                commonRedisDao.increamentByKey(BUY+pOrder.getInstrumentID(), (long) pOrder.getVolumeTotalOriginal());
+            }
         }
     }
     
@@ -191,6 +213,14 @@ public class Application {
         if(pInputOrder.getCombOffsetFlag().equals("0")){
             //开仓失败
             positionMap.remove(pInputOrder.getInstrumentID());
+            
+            //开仓失败后持仓数量减去
+            if(pInputOrder.getDirection() == '0'){
+                //买持量减去
+                commonRedisDao.increamentByKey(BUY+pInputOrder.getInstrumentID(), (long) -pInputOrder.getVolumeTotalOriginal());
+            }else {
+                commonRedisDao.increamentByKey(SELL+pInputOrder.getInstrumentID(), (long) -pInputOrder.getVolumeTotalOriginal());
+            }
         }else {
             //平仓失败
             String tradeID = commonRedisDao.getHash(CloseRelation.CLOSE_RELATION+pInputOrder.getInstrumentID(), pInputOrder.getOrderRef());
@@ -200,6 +230,15 @@ public class Application {
             commonRedisDao.cacheHash(Position.POSITION+pInputOrder.getInstrumentID(), tradeID, JSON.toJSONString(position));
             
             commonRedisDao.deleteHash(CloseRelation.CLOSE_RELATION+pInputOrder.getInstrumentID(), pInputOrder.getOrderRef());
+            
+            //开仓失败后持仓数量加上
+            if(pInputOrder.getDirection() == '0'){
+                //卖持量加上
+                commonRedisDao.increamentByKey(SELL+pInputOrder.getInstrumentID(), (long) pInputOrder.getVolumeTotalOriginal());
+            }else {
+                //买持量加上
+                commonRedisDao.increamentByKey(BUY+pInputOrder.getInstrumentID(), (long) pInputOrder.getVolumeTotalOriginal());
+            }
         }
     }
     
@@ -222,6 +261,7 @@ public class Application {
             //第二天可能成交编号重复
             logger.debug("缓存持仓信息："+JSON.toJSONString(position));
             commonRedisDao.cacheHash(Position.POSITION+position.getInstrumentID(), position.getTradeID(), JSON.toJSONString(position));
+            
         }else {
             logger.info("已平仓，成交价："+pTrade.getPrice());
             positionMap.put(pTrade.getInstrumentID(), null);
@@ -235,6 +275,7 @@ public class Application {
                 //删除平仓对应关系
                 commonRedisDao.deleteHash(CloseRelation.CLOSE_RELATION+pTrade.getInstrumentID(), pTrade.getOrderRef());
             }
+            
         }
     }
     
