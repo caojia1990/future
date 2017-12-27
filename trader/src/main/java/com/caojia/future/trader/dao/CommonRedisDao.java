@@ -64,11 +64,11 @@ public class CommonRedisDao {
      */
     public List<String> getHashList(String key){
         
-        logger.info("从redis中获取key值为:"+key+"的持仓信息");
+        //logger.info("从redis中获取key值为:"+key+"的持仓信息");
         
         List<String> list = this.hashOperations.multiGet(key, hashOperations.keys(key));
         
-        logger.debug("成功获取持仓信息"+list);
+        //logger.debug("成功获取持仓信息"+list);
         return list;
     }
     
@@ -92,4 +92,34 @@ public class CommonRedisDao {
         this.redisTemplate.delete(key);
         
     }
+    
+    /**
+     * 设置key值
+     * @param key
+     * @param value
+     */
+    public void setValueByKey(String key, String value){
+        
+        this.valueOperations.set(key, value);
+    }
+    
+    /**
+     * 获取key值
+     * @param key
+     * @return
+     */
+    public String getValueByKey(String key){
+        return this.valueOperations.get(key);
+    }
+    
+    /**
+     * 原子操作
+     * @param key
+     * @param value
+     */
+    public void increamentByKey(String key, Long value){
+        this.valueOperations.increment(key, value);
+    }
+    
+    
 }

@@ -61,7 +61,24 @@ public class CommonRedisDaoTest extends AbstractJUnit4SpringContextTests{
     @Test
     public void getKeysTest(){
         System.out.println(this.commonRedisDao.getKeys(Position.POSITION+"cu1709"));
+    }
+    
+    @Test
+    public void getValueByKey(){
+        Long buy = Long.parseLong(this.commonRedisDao.getValueByKey("buy:cu1801"));
+        System.out.println("买："+buy);
         
-        
+        Long sell = Long.parseLong(this.commonRedisDao.getValueByKey("sell:cu1801"));
+        System.out.println("卖："+sell);
+    }
+    
+    @Test
+    public void setValueByKey(){
+        this.commonRedisDao.setValueByKey("buy:cu1801", "12");
+    }
+    
+    @Test
+    public void increament(){
+        this.commonRedisDao.increamentByKey("buy:cu1801", -5L);
     }
 }

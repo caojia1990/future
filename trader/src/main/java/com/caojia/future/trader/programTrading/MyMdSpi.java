@@ -43,9 +43,9 @@ public class MyMdSpi extends JCTPMdSpi {
 		System.out.println("准备登陆");
 		//登陆
 		CThostFtdcReqUserLoginField userLoginField = new CThostFtdcReqUserLoginField();
-		userLoginField.setBrokerID("9999");
-		userLoginField.setUserID("090985");
-		userLoginField.setPassword("caojiactp");
+		userLoginField.setBrokerID(Application.BROKER_ID);
+		userLoginField.setUserID(Application.USER_ID);
+		userLoginField.setPassword(Application.PASSWORD);
 		
 		mdApi.reqUserLogin(userLoginField, 112);
 		System.out.println("登陆完成");
@@ -63,7 +63,7 @@ public class MyMdSpi extends JCTPMdSpi {
 		String s1 = s.replaceAll("\r\n", "");
 		String[] ss = s1.split(",");*/
 		
-		subResult = mdApi.subscribeMarketData("cu1709"/*,"al1709","rb1710","ru1709","bu1709"*/);
+		subResult = mdApi.subscribeMarketData("cu1801"/*,"al1710","rb1710","ru1709","bu1709"*/);
 		System.out.println(subResult == 0 ? "订阅成功" : "订阅失败");
 	}
 

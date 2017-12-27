@@ -1,6 +1,8 @@
 package com.caojia.future.trader.programTrading;
 
 
+import java.util.List;
+
 import org.apache.log4j.Logger;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderActionField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInputOrderField;
@@ -23,6 +25,8 @@ import org.hraink.futures.jctp.trader.JCTPTraderSpi;
 
 import com.alibaba.fastjson.JSON;
 import com.caojia.future.trader.bean.InstrumentInfo;
+import com.caojia.future.trader.bean.Position;
+import com.caojia.future.trader.dao.CommonRedisDao;
 import com.caojia.future.trader.dao.InstrumentInfoRedisDaoImpl;
 import com.caojia.future.trader.util.SpringContextUtil;
 
@@ -41,9 +45,9 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	int nRequestID = 0;
 	
 	//中证
-	String brokerId = "9999";
+	/*String brokerId = "9999";
 	String userId = "090985";
-	String password = "caojiactp";
+	String password = "caojiactp";*/
 	
 	private InstrumentInfoRedisDaoImpl instrumentInfoRedisDao;
 	
@@ -59,9 +63,9 @@ public class MyTraderSpi extends JCTPTraderSpi {
 		System.out.println("前置机连接");
 		CThostFtdcReqUserLoginField userLoginField = new CThostFtdcReqUserLoginField();
 		
-		userLoginField.setBrokerID(brokerId);
-		userLoginField.setUserID(userId);
-		userLoginField.setPassword(password);
+		userLoginField.setBrokerID(Application.BROKER_ID);
+		userLoginField.setUserID(Application.USER_ID);
+		userLoginField.setPassword(Application.PASSWORD);
 		
 		traderApi.reqUserLogin(userLoginField, 112);
 		
@@ -83,22 +87,27 @@ public class MyTraderSpi extends JCTPTraderSpi {
 		
 		//查询持仓明细
 		CThostFtdcQryInvestorPositionDetailField positionField = new CThostFtdcQryInvestorPositionDetailField();
-		positionField.setBrokerID(brokerId);
+		positionField.setBrokerID(Application.BROKER_ID);
 		positionField.setInstrumentID("cu1703");
-		positionField.setInvestorID(userId);
+		positionField.setInvestorID(Application.USER_ID);
 		//traderApi.reqQryInvestorPositionDetail(positionField, ++nRequestID);
 		
 		
 		//确认结算单
 		CThostFtdcSettlementInfoConfirmField confirmField = new CThostFtdcSettlementInfoConfirmField();
-		confirmField.setBrokerID(brokerId);
-		confirmField.setInvestorID(userId);
+		confirmField.setBrokerID(Application.BROKER_ID);
+		confirmField.setInvestorID(Application.USER_ID);
 		traderApi.reqSettlementInfoConfirm(confirmField, ++nRequestID);
 		
 		//查询合约信息
 		CThostFtdcQryInstrumentField pQryInstrument = new CThostFtdcQryInstrumentField();
 		//traderApi.reqQryInstrument(pQryInstrument, ++nRequestID);
-
+		
+		
+		//从redis中查询持仓信息
+		CommonRedisDao commonRedisDao = (CommonRedisDao) SpringContextUtil.getBean("commonRedisDao");
+		commonRedisDao.setValueByKey(Application.BUY+"cu1801", "0");
+		commonRedisDao.setValueByKey(Application.SELL+"cu1801", "0");
 	}
 	
 	//报单回报
