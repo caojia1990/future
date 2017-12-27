@@ -1,0 +1,20 @@
+/* ....Show License.... */
+
+.chart-bar {
+
+    -fx-background-color: #69de01;
+
+    -fx-background-insets: 0;
+
+    -fx-background-radius: 0;
+    
+
+}
+
+.series0.chart-bar { -fx-background-color: #69de01; }
+
+
+
+.series1.chart-bar { -fx-background-color: red; }
+
+.series2.chart-bar { -fx-background-color: yellow; }
