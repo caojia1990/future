@@ -35,6 +35,7 @@ import com.caojia.future.trader.dao.CommonRedisDao;
 import com.caojia.future.trader.service.FutureMarketService;
 import com.caojia.future.trader.strategy.FollowLargeNoCut;
 import com.caojia.future.trader.strategy.LargeOrderFollow;
+import com.caojia.future.trader.strategy.OneTick;
 import com.caojia.future.trader.util.SpringContextUtil;
 
 public class Application {
@@ -175,7 +176,6 @@ public class Application {
         }else if (!pOrder.getCombOffsetFlag().equals("0") && (pOrder.getOrderStatus() == THOST_FTDC_OST_Canceled || THOST_FTDC_OST_NoTradeNotQueueing == pOrder.getOrderStatus())) {
             logger.debug("平仓失败，报单状态："+pOrder.getOrderStatus()+", 报单信息："+pOrder.getStatusMsg());
             
-            //平仓失败将持仓信息还原
             String tradeID = commonRedisDao.getHash(CloseRelation.CLOSE_RELATION+pOrder.getInstrumentID(), pOrder.getOrderRef());
             String jsonStr = commonRedisDao.getHash(Position.POSITION+pOrder.getInstrumentID(), tradeID);
             Position position = JSON.parseObject(jsonStr, Position.class);
