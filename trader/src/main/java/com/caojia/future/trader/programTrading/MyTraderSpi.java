@@ -14,6 +14,7 @@ import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcInvestorPositionF
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcOrderField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcQryInstrumentCommissionRateField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcQryInstrumentField;
+import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcQryInstrumentMarginRateField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcQryInvestorPositionDetailField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcReqUserLoginField;
 import org.hraink.futures.ctp.thostftdcuserapistruct.CThostFtdcRspInfoField;
@@ -99,6 +100,22 @@ public class MyTraderSpi extends JCTPTraderSpi {
 		confirmField.setInvestorID(Application.USER_ID);
 		traderApi.reqSettlementInfoConfirm(confirmField, ++nRequestID);
 		
+		//查询合约手续费
+        CThostFtdcQryInstrumentCommissionRateField pQryInstrumentCommissionRate = new CThostFtdcQryInstrumentCommissionRateField();
+        pQryInstrumentCommissionRate.setBrokerID(Application.BROKER_ID);
+        pQryInstrumentCommissionRate.setInvestorID(Application.USER_ID);
+        //pQryInstrumentCommissionRate.setInstrumentID("rb1805");
+        //pQryInstrumentCommissionRate.setInstrumentID(pInstrument.getProductID());
+        //System.out.println(traderApi.reqQryInstrumentCommissionRate(pQryInstrumentCommissionRate, ++nRequestID));
+        
+        //查询合约保证金
+        CThostFtdcQryInstrumentMarginRateField field = new CThostFtdcQryInstrumentMarginRateField();
+        field.setBrokerID(Application.BROKER_ID);
+        field.setInvestorID(Application.USER_ID);
+        field.setInstrumentID("cu1805");
+        field.setHedgeFlag('1');
+        System.out.println(traderApi.reqQryInstrumentMarginRate(field, ++nRequestID));
+        
 		//查询合约信息
 		CThostFtdcQryInstrumentField pQryInstrument = new CThostFtdcQryInstrumentField();
 		//traderApi.reqQryInstrument(pQryInstrument, ++nRequestID);
@@ -193,6 +210,8 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	public void onRspQryInstrumentMarginRate(CThostFtdcInstrumentMarginRateField pInstrumentMarginRate,
 	        CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
 	    
+	    System.out.println("查询保证金返回码："+pRspInfo.getErrorID()+", 信息："+pRspInfo.getErrorMsg());
+	    System.out.println("保证金："+JSON.toJSONString(pInstrumentMarginRate));
 	}
 	
 	/**
@@ -204,6 +223,8 @@ public class MyTraderSpi extends JCTPTraderSpi {
      */
 	@Override
     public void onRspQryInstrument(CThostFtdcInstrumentField pInstrument, CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+	    
+	    System.out.println("合约信息："+JSON.toJSONString(pInstrument));
 	    
 	    InstrumentInfo info = new InstrumentInfo();
 	    info.setInstrumentID(pInstrument.getInstrumentID());
@@ -220,12 +241,12 @@ public class MyTraderSpi extends JCTPTraderSpi {
 	    info.setShortMarginRatio(pInstrument.getShortMarginRatio());
 	    instrumentInfoRedisDao.saveInstrument(info);
 	    
-	  /*//查询合约手续费
+	  //查询合约手续费
         CThostFtdcQryInstrumentCommissionRateField pQryInstrumentCommissionRate = new CThostFtdcQryInstrumentCommissionRateField();
-        pQryInstrumentCommissionRate.setBrokerID(brokerId);
-        pQryInstrumentCommissionRate.setInvestorID(userId);
+        pQryInstrumentCommissionRate.setBrokerID(Application.BROKER_ID);
+        pQryInstrumentCommissionRate.setInvestorID(Application.USER_ID);
         pQryInstrumentCommissionRate.setInstrumentID(pInstrument.getProductID());
-        traderApi.reqQryInstrumentCommissionRate(pQryInstrumentCommissionRate, ++nRequestID);*/
+        //System.out.println(traderApi.reqQryInstrumentCommissionRate(pQryInstrumentCommissionRate, ++nRequestID));
 	}
 	
 	   /**
@@ -237,6 +258,8 @@ public class MyTraderSpi extends JCTPTraderSpi {
      */
     public void onRspQryInstrumentCommissionRate(CThostFtdcInstrumentCommissionRateField pInstrumentCommissionRate, 
             CThostFtdcRspInfoField pRspInfo, int nRequestID, boolean bIsLast) {
+        
+        System.out.println("手续费："+JSON.toJSONString(pInstrumentCommissionRate));
         
         InstrumentInfo info = new InstrumentInfo();
         info.setInstrumentID(pInstrumentCommissionRate.getInstrumentID());

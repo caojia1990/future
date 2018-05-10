@@ -2,10 +2,10 @@ package com.caojia.future.trader.programTrading;
 
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_CC_Immediately;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_FCC_NotForceClose;
-import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_TC_IOC;
-import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_VC_AV;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_OST_Canceled;
 import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_OST_NoTradeNotQueueing;
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_TC_IOC;
+import static org.hraink.futures.ctp.thostftdcuserapidatatype.ThostFtdcUserApiDataTypeLibrary.THOST_FTDC_VC_AV;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,9 +34,6 @@ import com.caojia.future.trader.bean.Position;
 import com.caojia.future.trader.dao.CommonRedisDao;
 import com.caojia.future.trader.service.FutureMarketService;
 import com.caojia.future.trader.strategy.FollowLargeNoCut;
-import com.caojia.future.trader.strategy.FollowLargeNoCutProtect;
-import com.caojia.future.trader.strategy.LargeOrderFollow;
-import com.caojia.future.trader.strategy.OneTick;
 import com.caojia.future.trader.util.SpringContextUtil;
 
 public class Application {

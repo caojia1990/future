@@ -9,6 +9,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 
 public class ListViewSample extends Application {
@@ -42,6 +43,8 @@ public class ListViewSample extends Application {
             Rectangle rect = new Rectangle(100, 20);
             if (item != null) {
                 rect.setFill(Color.web(item));
+                setText(item);
+                setTextAlignment(TextAlignment.LEFT);
                 setGraphic(rect);
             }
         }
